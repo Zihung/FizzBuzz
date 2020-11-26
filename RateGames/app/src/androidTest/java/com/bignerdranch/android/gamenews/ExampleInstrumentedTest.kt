@@ -1,4 +1,4 @@
-package com.bignerdranch.android.criminalintent
+package com.bignerdranch.android.gamenews
 
 import androidx.test.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4

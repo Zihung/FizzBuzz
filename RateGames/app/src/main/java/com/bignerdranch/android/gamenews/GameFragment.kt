@@ -1,4 +1,4 @@
-package com.bignerdranch.android.criminalintent
+package com.bignerdranch.android.gamenews
 
 import android.app.Activity
 import android.content.Intent
@@ -22,17 +22,17 @@ import androidx.lifecycle.ViewModelProviders
 import java.io.File
 import java.util.*
 
-private const val TAG = "CrimeFragment"
-private const val ARG_CRIME_ID = "crime_id"
+private const val TAG = "GameFragment"
+private const val ARG_GAME_ID = "game_id"
 private const val DIALOG_DATE = "DialogDate"
 private const val REQUEST_DATE = 0
 private const val REQUEST_CONTACT = 1
 private const val REQUEST_PHOTO = 2
 private const val DATE_FORMAT = "EEE, MMM, dd"
 
-class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
+class GameFragment : Fragment(), DatePickerFragment.Callbacks {
 
-    private lateinit var crime: Crime
+    private lateinit var game: Game
     private lateinit var photoFile: File
     private lateinit var photoUri: Uri
     private lateinit var titleField: EditText
@@ -42,15 +42,15 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
     private lateinit var suspectButton: Button
     private lateinit var photoButton: ImageButton
     private lateinit var photoView: ImageView
-    private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
-        ViewModelProviders.of(this).get(CrimeDetailViewModel::class.java)
+    private val gameDetailViewModel: GameDetailViewModel by lazy {
+        ViewModelProviders.of(this).get(GameDetailViewModel::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        crime = Crime()
-        val crimeId: UUID = arguments?.getSerializable(ARG_CRIME_ID) as UUID
-        crimeDetailViewModel.loadCrime(crimeId)
+        game = Game()
+        val gameId: UUID = arguments?.getSerializable(ARG_GAME_ID) as UUID
+        gameDetailViewModel.loadGame(gameId)
     }
 
     override fun onCreateView(
@@ -58,31 +58,31 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_crime, container, false)
+        val view = inflater.inflate(R.layout.fragment_game, container, false)
 
-        titleField = view.findViewById(R.id.crime_title) as EditText
-        dateButton = view.findViewById(R.id.crime_date) as Button
-        solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
-        reportButton = view.findViewById(R.id.crime_report) as Button
-        suspectButton = view.findViewById(R.id.crime_suspect) as Button
-        photoButton = view.findViewById(R.id.crime_camera) as ImageButton
-        photoView = view.findViewById(R.id.crime_photo) as ImageView
+        titleField = view.findViewById(R.id.game_title) as EditText
+        dateButton = view.findViewById(R.id.game_date) as Button
+        solvedCheckBox = view.findViewById(R.id.game_solved) as CheckBox
+        reportButton = view.findViewById(R.id.game_report) as Button
+        suspectButton = view.findViewById(R.id.game_suspect) as Button
+        photoButton = view.findViewById(R.id.game_camera) as ImageButton
+        photoView = view.findViewById(R.id.game_photo) as ImageView
 
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val crimeId = arguments?.getSerializable(ARG_CRIME_ID) as UUID
-        crimeDetailViewModel.loadCrime(crimeId)
-        crimeDetailViewModel.crimeLiveData.observe(
+        val gameId = arguments?.getSerializable(ARG_GAME_ID) as UUID
+        gameDetailViewModel.loadGame(gameId)
+        gameDetailViewModel.gameLiveData.observe(
             viewLifecycleOwner,
-            Observer { crime ->
-                crime?.let {
-                    this.crime = crime
-                    photoFile = crimeDetailViewModel.getPhotoFile(crime)
+            Observer { game ->
+                game?.let {
+                    this.game = game
+                    photoFile = gameDetailViewModel.getPhotoFile(game)
                     photoUri = FileProvider.getUriForFile(requireActivity(),
-                        "com.bignerdranch.android.criminalintent.fileprovider",
+                        "com.bignerdranch.android.gamenews.fileprovider",
                         photoFile)
                     updateUI()
                 }
@@ -109,7 +109,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
                 before: Int,
                 count: Int
             ) {
-                crime.title = sequence.toString()
+                game.title = sequence.toString()
             }
 
             override fun afterTextChanged(sequence: Editable?) {
@@ -120,24 +120,24 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
 
         solvedCheckBox.apply {
             setOnCheckedChangeListener { _, isChecked ->
-                crime.isSolved = isChecked
+                game.isSolved = isChecked
             }
         }
 
         dateButton.setOnClickListener {
-            DatePickerFragment.newInstance(crime.date).apply {
-                setTargetFragment(this@CrimeFragment, REQUEST_DATE)
-                show(this@CrimeFragment.requireFragmentManager(), DIALOG_DATE)
+            DatePickerFragment.newInstance(game.date).apply {
+                setTargetFragment(this@GameFragment, REQUEST_DATE)
+                show(this@GameFragment.requireFragmentManager(), DIALOG_DATE)
             }
         }
 
         reportButton.setOnClickListener {
             Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, getCrimeReport())
+                putExtra(Intent.EXTRA_TEXT, getGammeReport())
                 putExtra(
                     Intent.EXTRA_SUBJECT,
-                    getString(R.string.crime_report_subject))
+                    getString(R.string.game_report_subject))
             }.also { intent ->
                 val chooserIntent =
                     Intent.createChooser(intent, getString(R.string.send_report))
@@ -195,7 +195,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
 
     override fun onStop() {
         super.onStop()
-        crimeDetailViewModel.saveCrime(crime)
+        gameDetailViewModel.saveGame(game)
     }
 
     override fun onDetach() {
@@ -206,16 +206,16 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
     }
 
     override fun onDateSelected(date: Date) {
-        crime.date = date
+        game.date = date
         updateUI()
     }
 
     private fun updateUI() {
-        titleField.setText(crime.title)
-        dateButton.text = crime.date.toString()
-        solvedCheckBox.isChecked = crime.isSolved
-        if (crime.suspect.isNotEmpty()) {
-            suspectButton.text = crime.suspect
+        titleField.setText(game.title)
+        dateButton.text = game.date.toString()
+        solvedCheckBox.isChecked = game.isSolved
+        if (game.suspect.isNotEmpty()) {
+            suspectButton.text = game.suspect
         }
         updatePhotoView()
     }
@@ -225,11 +225,11 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
             val bitmap = getScaledBitmap(photoFile.path, requireActivity())
             photoView.setImageBitmap(bitmap)
             photoView.contentDescription =
-                getString(R.string.crime_photo_image_description)
+                getString(R.string.game_photo_image_description)
         } else {
             photoView.setImageDrawable(null)
             photoView.contentDescription =
-                getString(R.string.crime_photo_no_image_description)
+                getString(R.string.game_photo_no_image_description)
         }
     }
 
@@ -254,8 +254,8 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
                     // that is your suspect's name.
                     it.moveToFirst()
                     val suspect = it.getString(0)
-                    crime.suspect = suspect
-                    crimeDetailViewModel.saveCrime(crime)
+                    game.suspect = suspect
+                    gameDetailViewModel.saveGame(game)
                     suspectButton.text = suspect
                 }
             }
@@ -269,31 +269,31 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
         }
     }
 
-    private fun getCrimeReport(): String {
-        val solvedString = if (crime.isSolved) {
-            getString(R.string.crime_report_solved)
+    private fun getGammeReport(): String {
+        val solvedString = if (game.isSolved) {
+            getString(R.string.game_report_solved)
         } else {
-            getString(R.string.crime_report_unsolved)
+            getString(R.string.game_report_unsolved)
         }
 
-        val dateString = DateFormat.format(DATE_FORMAT, crime.date).toString()
-        val suspect = if (crime.suspect.isBlank()) {
-            getString(R.string.crime_report_no_suspect)
+        val dateString = DateFormat.format(DATE_FORMAT, game.date).toString()
+        val suspect = if (game.suspect.isBlank()) {
+            getString(R.string.game_report_no_suspect)
         } else {
-            getString(R.string.crime_report_suspect, crime.suspect)
+            getString(R.string.game_report_suspect, game.suspect)
         }
 
-        return getString(R.string.crime_report,
-            crime.title, dateString, solvedString, suspect)
+        return getString(R.string.game_report,
+            game.title, dateString, solvedString, suspect)
     }
 
     companion object {
 
-        fun newInstance(crimeId: UUID): CrimeFragment {
+        fun newInstance(gameId: UUID): GameFragment {
             val args = Bundle().apply {
-                putSerializable(ARG_CRIME_ID, crimeId)
+                putSerializable(ARG_GAME_ID, gameId)
             }
-            return CrimeFragment().apply {
+            return GameFragment().apply {
                 arguments = args
             }
         }

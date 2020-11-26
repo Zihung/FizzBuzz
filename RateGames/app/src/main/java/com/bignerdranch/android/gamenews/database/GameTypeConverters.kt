@@ -1,9 +1,9 @@
-package com.bignerdranch.android.criminalintent.database
+package com.bignerdranch.android.gamenews.database
 
 import androidx.room.TypeConverter
 import java.util.*
 
-class CrimeTypeConverters {
+class GameTypeConverters {
     @TypeConverter
     fun fromDate(date: Date?): Long? {
         return date?.time

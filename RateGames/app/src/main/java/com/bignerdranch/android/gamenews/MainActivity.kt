@@ -1,11 +1,10 @@
-package com.bignerdranch.android.criminalintent
+package com.bignerdranch.android.gamenews
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.FragmentManager
 import java.util.UUID
 
-class MainActivity : AppCompatActivity(), CrimeListFragment.Callbacks {
+class MainActivity : AppCompatActivity(), GameListFragment.Callbacks {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -15,7 +14,7 @@ class MainActivity : AppCompatActivity(), CrimeListFragment.Callbacks {
             supportFragmentManager.findFragmentById(R.id.fragment_container)
 
         if (currentFragment == null) {
-            val fragment = CrimeListFragment.newInstance()
+            val fragment = GameListFragment.newInstance()
             supportFragmentManager
                 .beginTransaction()
                 .add(R.id.fragment_container, fragment)
@@ -23,8 +22,8 @@ class MainActivity : AppCompatActivity(), CrimeListFragment.Callbacks {
         }
     }
 
-    override fun onCrimeSelected(crimeId: UUID) {
-        val fragment = CrimeFragment.newInstance(crimeId)
+    override fun onGameSelected(gameId: UUID) {
+        val fragment = GameFragment.newInstance(gameId)
         supportFragmentManager
             .beginTransaction()
             .replace(R.id.fragment_container, fragment)
